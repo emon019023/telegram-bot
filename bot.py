@@ -763,20 +763,24 @@ def balance(msg):
 @bot.message_handler(func=lambda m: m.text == "⬅️ Back")
 def back(msg):
     bot.send_message(msg.chat.id, "🔙 Main Menu", reply_markup=main_menu(msg.from_user.id))
-    import threading
+    import os
 from flask import Flask
+import threading
 
+# Flask অ্যাপ তৈরি (Render-কে খুশি করার জন্য)
 app = Flask(__name__)
 
 @app.route('/')
-def home():
-    return "Bot is running!"
+def health_check():
+    return "Bot is alive!", 200
 
-def run_web():
+def run_flask():
     port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(host='0.0.0.0', port=port)
 
-threading.Thread(target=run_web).start()
+if __name__ == "__main__":
+    # Flask-কে আলাদা থ্রেডে চালানো যাতে বট আর ওয়েবসাইট একসাথে চলে
+    threading.Thread(target=run_flask).start()
 
 # ================= RUN =================
 print("Bot Running...")
