@@ -5,7 +5,7 @@ import random
 import string
 
 # ================= CONFIG =================
-TOKEN = "8677441280:AAGYpdCRebAaez6j6CkOmY0BMLGWdBFDncY"
+TOKEN = "8677441280:AAEsNhEy7V7438kY7E7rXEohoVfSb57H4Jg"
 BOT_USERNAME = "baby479_bot"
 CHANNEL_LINK = "https://t.me/incomezone1000"
 CHANNEL_USERNAME = "@incomezone1000"
