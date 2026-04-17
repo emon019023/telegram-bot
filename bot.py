@@ -7,7 +7,7 @@ import string
 # ================= CONFIG =================
 import os
 TOKEN = os.getenv("BOT_TOKEN")
-BOT_USERNAME = "baby479_bot"
+BOT_USERNAME = "@vipincomex_bot"
 CHANNEL_LINK = "https://t.me/incomezone1000"
 CHANNEL_USERNAME = "@incomezone1000"
 ADMIN_ID = 7036481355
