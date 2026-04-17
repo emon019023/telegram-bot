@@ -5,6 +5,7 @@ import random
 import string
 
 # ================= CONFIG =================
+import os
 TOKEN = os.getenv("BOT_TOKEN")
 BOT_USERNAME = "baby479_bot"
 CHANNEL_LINK = "https://t.me/incomezone1000"
