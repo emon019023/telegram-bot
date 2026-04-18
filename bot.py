@@ -17,7 +17,7 @@ ADMIN_ID = 7036481355
 bot = telebot.TeleBot(TOKEN)
 
 # ================= MONGODB DATABASE =================
-MONGO_URL = "mongodb+srv://qtemontr_db_user:0spzeUF6EzWz5WFE@cluster0.veht6tf.mongodb.net/?appName=Cluster0"
+MONGO_URL = os.getenv("MONGO_URL")
 client = pymongo.MongoClient(MONGO_URL)
 db = client['vip_income_db']
 
