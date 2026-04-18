@@ -1,11 +1,13 @@
 import telebot
 from telebot.types import ReplyKeyboardMarkup, InlineKeyboardMarkup, InlineKeyboardButton
-import sqlite3
+import pymongo
 import random
 import string
+import os
+import threading
+from flask import Flask
 
 # ================= CONFIG =================
-import os
 TOKEN = os.getenv("BOT_TOKEN")
 BOT_USERNAME = "@vipincomex_bot"
 CHANNEL_LINK = "https://t.me/incomezone1000"
@@ -14,44 +16,16 @@ ADMIN_ID = 7036481355
 
 bot = telebot.TeleBot(TOKEN)
 
+# ================= MONGODB DATABASE =================
+MONGO_URL = "mongodb+srv://qtemontr_db_user:0spzeUF6EzWz5WFE@cluster0.veht6tf.mongodb.net/?appName=Cluster0"
+client = pymongo.MongoClient(MONGO_URL)
+db = client['vip_income_db']
+
+users_col = db['users']
+submissions_col = db['submissions']
+withdraws_col = db['withdraws']
 # ================= DATABASE =================
-conn = sqlite3.connect("bot.db", check_same_thread=False)
-cursor = conn.cursor()
 
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS users (
-    user_id INTEGER PRIMARY KEY,
-    balance REAL DEFAULT 0,
-    total_income REAL DEFAULT 0,
-    completed INTEGER DEFAULT 0,
-    pending INTEGER DEFAULT 0,
-    refer INTEGER DEFAULT 0,
-    refer_income REAL DEFAULT 0,
-    ref_by INTEGER
-)
-""")
-
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS submissions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER,
-    name TEXT,
-    email TEXT,
-    password TEXT,
-    status TEXT DEFAULT 'pending'
-)
-""")
-
-# ✅✅ WITHDRAW TABLE START
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS withdraws (
-id INTEGER PRIMARY KEY AUTOINCREMENT,
-user_id INTEGER,
-amount REAL,
-number TEXT,
-status TEXT DEFAULT 'pending'
-)
-""")
 # 💥💥 WITHDRAW TABLE END
 
 
@@ -96,13 +70,21 @@ def generate_gmail_data():
 
 # ================= USER =================
 def get_user(user_id):
-    cursor.execute("SELECT * FROM users WHERE user_id=?", (user_id,))
-    user = cursor.fetchone()
-
+    user = users_col.find_one({"user_id": user_id})
     if not user:
-        cursor.execute("INSERT INTO users (user_id) VALUES (?)", (user_id,))
-        conn.commit()
-        return get_user(user_id)
+        user = {
+            "user_id": user_id,
+            "balance": 0.0,
+            "total_income": 0.0,
+            "completed": 0,
+            "pending": 0,
+            "refer": 0,
+            "refer_income": 0.0,
+            "ref_by": None
+        }
+        users_col.insert_one(user)
+    return user
+        
 
     return user
 
