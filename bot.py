@@ -781,7 +781,10 @@ def run_flask():
 if __name__ == "__main__":
     # Flask-কে আলাদা থ্রেডে চালানো যাতে বট আর ওয়েবসাইট একসাথে চলে
     threading.Thread(target=run_flask).start()
-
+@bot.message_handler(content_types=['video'])
+def get_video_id(msg):
+    # বটকে ভিডিও পাঠালে সে আপনাকে ফাইল আইডি রিটার্ন করবে
+    bot.reply_to(msg, f"এই ভিডিওর File ID হলো: `{msg.video.file_id}`", parse_mode="Markdown")
 # ================= RUN =================
 print("Bot Running...")
 bot.infinity_polling()
