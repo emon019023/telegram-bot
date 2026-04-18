@@ -6,6 +6,7 @@ import string
 import os
 import threading
 from flask import Flask
+from bson import ObjectId # এটি পরে ডেটাবেস আইডি খুঁজে পেতে লাগবে
 
 # ================= CONFIG =================
 TOKEN = os.getenv("BOT_TOKEN")
@@ -25,10 +26,6 @@ users_col = db['users']
 submissions_col = db['submissions']
 withdraws_col = db['withdraws']
 # ================= DATABASE =================
-
-# 💥💥 WITHDRAW TABLE END
-
-
 
 # ================= JOIN CHECK =================
 def is_joined(user_id):
@@ -69,6 +66,7 @@ def generate_gmail_data():
     return name, email, password
 
 # ================= USER =================
+
 def get_user(user_id):
     user = users_col.find_one({"user_id": user_id})
     if not user:
@@ -84,17 +82,11 @@ def get_user(user_id):
         }
         users_col.insert_one(user)
     return user
-        
 
-    return user
-
-# ================= TEMP =================
+# ================= TEMP DATA (In-Memory) =================
 user_task_data = {}
 user_last_task_msg = {}
-
-# ✅✅ WITHDRAW TEMP START
 withdraw_data = {}
-# 💥💥 WITHDRAW TEMP END
 
 # ================= MENU =================
 def main_menu(user_id=None):
@@ -103,22 +95,21 @@ def main_menu(user_id=None):
     m.row("🏦 টাকা উত্তোলন", "🎁 Invite & Earn")
     m.row("📞 সাপোর্ট", "🎯 মিশন")
 
-    # ✅ ONLY ADMIN দেখবে
+    # ✅ শুধুমাত্র অ্যাডমিন এই বাটনটি দেখবে
     if user_id == ADMIN_ID:
         m.row("⚙️ ADMIN PANEL ⚙️")
 
     return m
 
 
-# ================= WITHDRAW =================
-
-# ✅✅ WITHDRAW SYSTEM START
+# ================= WITHDRAW SYSTEM =================
 
 @bot.message_handler(func=lambda m: m.text == "🏦 টাকা উত্তোলন")
 def withdraw(msg):
     user = get_user(msg.from_user.id)
 
-    if user[1] < 100:
+    # মঙ্গোডিবিতে ইনডেক্স [1] এর বদলে সরাসরি 'balance' কী ব্যবহার করতে হয়
+    if user['balance'] < 100:
         bot.send_message(msg.chat.id, "❌ দুঃখিত আপনার মিনিমাম ব্যালেন্স নেই❌ মিনিমাম 100 টাকা হলে উত্তোলন করতে পারবেন✅ উত্তোলন করতে বেশি বেশি করে কাজ করুন ধন্যবাদ 😊 ")
         return
 
@@ -137,7 +128,7 @@ def process_withdraw(msg):
     # ❌ cancel
     if msg.text == "❌ বাতিল":
         del withdraw_data[uid]
-        bot.send_message(msg.chat.id, "❌ উত্তোলন বাতিল করা হয়েছে", reply_markup=main_menu(msg.from_user.id))
+        bot.send_message(msg.chat.id, "❌ উত্তোলন বাতিল করা হয়েছে", reply_markup=main_menu(uid))
         return
 
     # STEP 1: amount
@@ -155,7 +146,7 @@ def process_withdraw(msg):
             bot.send_message(msg.chat.id, "❌ মিনিমাম 100 টাকা দিতে হবে")
             return
 
-        if amount > user[1]:
+        if amount > user['balance']:
             bot.send_message(msg.chat.id, "❌ আপনার ব্যালেন্সে এত টাকা নেই")
             return
 
@@ -174,7 +165,7 @@ def process_withdraw(msg):
             bot.send_message(msg.chat.id, "❌ শুধু bKash বা Nagad বেছে নিন")
             return
 
-        method = "bKash" if "bKash" in msg.text else "Nagad"
+        method = "bKash" if "📱 bKash" in msg.text else "Nagad"
         withdraw_data[uid]["method"] = method
 
         bot.send_message(msg.chat.id, f"📱 আপনার {method} নাম্বার দিন (১১ ডিজিট):")
